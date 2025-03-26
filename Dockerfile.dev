@@ -1,0 +1,33 @@
+# Base image z Node.js i Go
+FROM node:22.14.0-bullseye
+
+# Instalacja Go 1.24.1
+RUN apt-get update && apt-get install -y wget gcc git
+RUN wget -qO- https://dl.google.com/go/go1.24.1.linux-amd64.tar.gz | tar -xz -C /usr/local
+ENV PATH $PATH:/usr/local/go/bin
+ENV GOPATH /go
+
+# Utworzenie użytkownika nie-root
+RUN useradd -m -u 1001 appuser
+USER appuser
+
+# Konfiguracja npm dla użytkownika
+ENV PATH $PATH:/home/appuser/.npm-global/bin
+RUN npm config set prefix '/home/appuser/.npm-global'
+
+# Instalacja mockly-cli
+RUN npm install -g mockly-cli
+
+# Środowisko pracy
+WORKDIR /app
+
+# Kopiowanie plików Go mod
+COPY --chown=appuser:appuser go.mod go.sum ./
+RUN go mod download
+
+# Kopiowanie źródła
+COPY --chown=appuser:appuser src ./src
+COPY --chown=appuser:appuser schemas ./schemas
+
+# Kompilacja i uruchomienie
+CMD ["go", "run", "./src/main.go"]

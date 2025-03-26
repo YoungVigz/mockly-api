@@ -1,0 +1,86 @@
+{
+  "user": [
+    {
+      "id": "6a19d8a8-7b48-4936-9e20-c964e9c3ccc3",
+      "email": "Brook_Wehner77@gmail.com",
+      "age": 14,
+      "isVerfy": true
+    },
+    {
+      "id": "1065ffc7-6ae1-4f41-9da4-ccf9a7bb921d",
+      "email": "Salvador10@hotmail.com",
+      "age": 55,
+      "isVerfy": false
+    },
+    {
+      "id": "1f16ad1b-fd8e-47f1-9533-898c78a4978c",
+      "email": "Jany.Mohr88@hotmail.com",
+      "age": 49,
+      "isVerfy": true
+    },
+    {
+      "id": "c2f2675f-52a5-4380-adc5-37c53d2dc4ef",
+      "email": "Denis.MacGyver26@hotmail.com",
+      "age": 95,
+      "isVerfy": false
+    },
+    {
+      "id": "db2f29b8-4a8b-4188-a23e-64cdcb08e5bd",
+      "email": "Paul_Tremblay@gmail.com",
+      "age": 99,
+      "isVerfy": true
+    }
+  ],
+  "points": [
+    {
+      "x": -9,
+      "y": 84,
+      "animals": "English Toy Terrier"
+    },
+    {
+      "x": 5,
+      "y": 81,
+      "animals": "Grand Anglo-Français Tricolore"
+    },
+    {
+      "x": -17,
+      "y": 99,
+      "animals": "Vikhan"
+    },
+    {
+      "x": 2,
+      "y": 20,
+      "animals": "Hällefors Elkhound"
+    },
+    {
+      "x": 4,
+      "y": 12,
+      "animals": "Serrano Bulldog"
+    },
+    {
+      "x": 0,
+      "y": 12,
+      "animals": "New Guinea Singing Dog"
+    },
+    {
+      "x": 10,
+      "y": 92,
+      "animals": "Golden Retriever"
+    },
+    {
+      "x": 6,
+      "y": 80,
+      "animals": "Cão Fila de São Miguel"
+    },
+    {
+      "x": 5,
+      "y": 52,
+      "animals": "Pomeranian"
+    },
+    {
+      "x": -17,
+      "y": 68,
+      "animals": "Cretan Hound"
+    }
+  ]
+}

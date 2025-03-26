@@ -1,0 +1,41 @@
+{
+    "models": {
+        "user": {
+            "count": 5,
+            "fields": {
+                "id": {
+                    "type": "uuid"
+                },
+                "email": {
+                    "type": "faker",
+                    "method": "internet.email"
+                },
+                "age": {
+                    "type": "number",
+                    "min": "0",
+                    "max": "100"
+                },
+                "isVerfy": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "points": {
+            "count": 10,
+            "fields": {
+                "x": {
+                    "type": "number",
+                    "min": "-20",
+                    "max": "10"
+                },
+                "y": {
+                    "type": "number"
+                },
+                "animals": {
+                    "type": "faker",
+                    "method": "animal.dog"
+                }
+            }
+        }
+    }
+}
