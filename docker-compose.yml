@@ -13,8 +13,13 @@ services:
     develop:
       watch:
         - action: sync+restart
-          path: ./src
-          target: /app/src
+          path: ./cmd
+          target: /app/cmd
+          ignore:
+            - "**/*.test.go"
+        - action: sync+restart
+          path: ./internal
+          target: /app/internal
           ignore:
             - "**/*.test.go"
         - action: sync
