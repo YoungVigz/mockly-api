@@ -12,7 +12,7 @@ import (
 func main() {
 
 	// Database initialization and connection test
-	err := database.DatabaseConnectionTest()
+	err := database.DatabaseInit()
 
 	if err != nil {
 		log.Fatal("Unable to connect to database!")
