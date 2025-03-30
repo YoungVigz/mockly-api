@@ -1,0 +1,60 @@
+package services
+
+import (
+	"github.com/YoungVigz/mockly-api/internal/models"
+	"github.com/YoungVigz/mockly-api/internal/repository"
+	"github.com/YoungVigz/mockly-api/internal/utils"
+)
+
+type CustomError struct {
+	Code         int
+	ErrorMessage string
+}
+
+func (e *CustomError) Error() string {
+	return e.ErrorMessage
+}
+
+type UserService struct {
+	repo repository.IUserRepository
+}
+
+func NewUserService(repo repository.IUserRepository) *UserService {
+	return &UserService{repo: repo}
+}
+
+func (s *UserService) CreateUser(userData *models.UserCreateRequest) (*models.UserResponse, error) {
+	var user models.User = models.User{Username: userData.Username, Email: userData.Email}
+
+	existingUser, err := s.repo.FindByUsername(user.Username)
+
+	if existingUser != nil {
+		return nil, &CustomError{Code: 409, ErrorMessage: "Username already in use"}
+	} else if err != nil {
+		return nil, &CustomError{Code: 500, ErrorMessage: "Internal Server Error"}
+	}
+
+	existingUser, err = s.repo.FindByEmail(user.Email)
+
+	if existingUser != nil {
+		return nil, &CustomError{Code: 409, ErrorMessage: "Email already in use"}
+	} else if err != nil {
+		return nil, &CustomError{Code: 500, ErrorMessage: "Internal Server Error"}
+	}
+
+	hash, err := utils.HashPassword(userData.Password)
+
+	if err != nil {
+		return nil, &CustomError{Code: 500, ErrorMessage: "Internal Server Error"}
+	}
+
+	user.Password = hash
+
+	createdUser, err := s.repo.InsertUser(user)
+
+	if err != nil {
+		return nil, &CustomError{Code: 500, ErrorMessage: "Internal Server Error"}
+	}
+
+	return createdUser, nil
+}
