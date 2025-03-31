@@ -19,7 +19,7 @@ func init() {
 
 func RegisterUser(c *gin.Context) {
 
-	userCreateRequest := &models.UserCreateRequest{}
+	userCreateRequest := &models.UserAuthRequest{}
 
 	if c.Bind(&userCreateRequest) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -62,5 +62,44 @@ func RegisterUser(c *gin.Context) {
 }
 
 func LoginUser(c *gin.Context) {
+	userLoginRequest := &models.UserLoginRequest{}
+
+	if c.Bind(&userLoginRequest) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":  http.StatusBadRequest,
+			"error": "Could not read provided values, ensure that your body is correct",
+		})
+
+		return
+	}
+
+	validatorMasseges, err := validators.LoginValidator(userLoginRequest)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":   http.StatusBadRequest,
+			"errors": validatorMasseges,
+		})
+
+		return
+	}
+
+	token, err := userService.Login(userLoginRequest)
+
+	if err != nil {
+		customError := err.(*services.CustomError)
+
+		c.JSON(customError.Code, gin.H{
+			"code":  customError.Code,
+			"error": customError.ErrorMessage,
+		})
+
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"code":  http.StatusCreated,
+		"token": token,
+	})
 
 }

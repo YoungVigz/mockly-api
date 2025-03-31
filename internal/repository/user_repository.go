@@ -10,8 +10,8 @@ import (
 
 type IUserRepository interface {
 	InsertUser(models.User) (*models.UserResponse, error)
-	FindByUsername(string) (*models.UserResponse, error)
-	FindByEmail(string) (*models.UserResponse, error)
+	FindByUsername(string) (*models.User, error)
+	FindByEmail(string) (*models.User, error)
 }
 
 type UserRepository struct {
@@ -28,13 +28,13 @@ func NewUserRepository() (*UserRepository, error) {
 	return &UserRepository{db: db}, nil
 }
 
-func (repo *UserRepository) FindByUsername(username string) (*models.UserResponse, error) {
-	var user models.UserResponse
+func (repo *UserRepository) FindByUsername(username string) (*models.User, error) {
+	var user models.User
 
-	query := "SELECT id, username, email FROM users WHERE username = $1 LIMIT 1"
+	query := "SELECT * FROM users WHERE username = $1 LIMIT 1"
 	row := repo.db.QueryRow(query, username)
 
-	err := row.Scan(&user.Id, &user.Username, &user.Email)
+	err := row.Scan(&user.Id, &user.Username, &user.Email, &user.Password)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -45,13 +45,13 @@ func (repo *UserRepository) FindByUsername(username string) (*models.UserRespons
 	return &user, nil
 }
 
-func (repo *UserRepository) FindByEmail(email string) (*models.UserResponse, error) {
-	var user models.UserResponse
+func (repo *UserRepository) FindByEmail(email string) (*models.User, error) {
+	var user models.User
 
-	query := "SELECT id, username, email FROM users WHERE email = $1 LIMIT 1"
+	query := "SELECT * FROM users WHERE email = $1 LIMIT 1"
 	row := repo.db.QueryRow(query, email)
 
-	err := row.Scan(&user.Id, &user.Username, &user.Email)
+	err := row.Scan(&user.Id, &user.Username, &user.Email, &user.Password)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

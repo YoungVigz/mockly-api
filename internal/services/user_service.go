@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/YoungVigz/mockly-api/internal/models"
 	"github.com/YoungVigz/mockly-api/internal/repository"
 	"github.com/YoungVigz/mockly-api/internal/utils"
@@ -23,7 +25,7 @@ func NewUserService(repo repository.IUserRepository) *UserService {
 	return &UserService{repo: repo}
 }
 
-func (s *UserService) CreateUser(userData *models.UserCreateRequest) (*models.UserResponse, error) {
+func (s *UserService) CreateUser(userData *models.UserAuthRequest) (*models.UserResponse, error) {
 	var user models.User = models.User{Username: userData.Username, Email: userData.Email}
 
 	existingUser, err := s.repo.FindByUsername(user.Username)
@@ -57,4 +59,33 @@ func (s *UserService) CreateUser(userData *models.UserCreateRequest) (*models.Us
 	}
 
 	return createdUser, nil
+}
+
+func (s *UserService) Login(userData *models.UserLoginRequest) (string, error) {
+
+	user, err := s.repo.FindByEmail(userData.Email)
+
+	if err != nil {
+		return "", &CustomError{Code: 500, ErrorMessage: "Internal Server Error"}
+	}
+
+	if user == nil {
+		return "", &CustomError{Code: 401, ErrorMessage: "Invalid email, or password"}
+	}
+
+	isPasswordValid := utils.CheckPasswordHash(userData.Password, user.Password)
+
+	if !isPasswordValid {
+		return "", &CustomError{Code: 401, ErrorMessage: "Invalid email, or password"}
+	}
+
+	token, err := utils.CreateJWTToken(user)
+
+	fmt.Println(err)
+
+	if err != nil {
+		return "", &CustomError{Code: 500, ErrorMessage: "Internal Server Error"}
+	}
+
+	return token, nil
 }

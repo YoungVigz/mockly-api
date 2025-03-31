@@ -7,12 +7,14 @@ services:
     ports:
       - "8080:8080"
     environment:
+      # Those envs are only for devs purposes
       - NODE_ENV=development
       - DB_NAME=mydb
       - DB_PORT=5432
       - DB_HOST=172.19.0.2
       - DB_USER=myuser
       - DB_PASSWORD=mypassword
+      - JWT_SECRET=Hg7GFFGmMETEty+af3KNLD48u0o/f/vMNo9d3R1p/Pw=
     depends_on:
       - pg_db
     develop:

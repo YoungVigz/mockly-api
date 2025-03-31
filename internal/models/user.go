@@ -7,8 +7,13 @@ type User struct {
 	Password string `json:"-"`
 }
 
-type UserCreateRequest struct {
+type UserAuthRequest struct {
 	Username string
+	Email    string
+	Password string
+}
+
+type UserLoginRequest struct {
 	Email    string
 	Password string
 }

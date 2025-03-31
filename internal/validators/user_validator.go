@@ -13,7 +13,7 @@ var (
 	usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9_-]{3,20}$`)
 )
 
-func CreateUserValidator(userRequest *models.UserCreateRequest) ([]string, error) {
+func CreateUserValidator(userRequest *models.UserAuthRequest) ([]string, error) {
 	var validationErrors []string
 
 	if userRequest.Username == "" {
@@ -61,6 +61,27 @@ func CreateUserValidator(userRequest *models.UserCreateRequest) ([]string, error
 			validationErrors = append(validationErrors,
 				"Password must contain: "+strings.Join(passwordErrors, ", "))
 		}
+	}
+
+	if len(validationErrors) > 0 {
+		return validationErrors, errors.New("validation failed")
+	}
+
+	return nil, nil
+}
+
+func LoginValidator(userRequest *models.UserLoginRequest) ([]string, error) {
+
+	var validationErrors []string
+
+	if userRequest.Email == "" {
+		validationErrors = append(validationErrors, "Email is required")
+	} else if !emailRegex.MatchString(userRequest.Email) {
+		validationErrors = append(validationErrors, "Invalid email format. Example: user@example.com")
+	}
+
+	if userRequest.Password == "" {
+		validationErrors = append(validationErrors, "Password is required")
 	}
 
 	if len(validationErrors) > 0 {
