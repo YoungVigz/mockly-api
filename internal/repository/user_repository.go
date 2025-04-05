@@ -10,6 +10,7 @@ import (
 
 type IUserRepository interface {
 	InsertUser(models.User) (*models.UserResponse, error)
+	FindById(int) (*models.User, error)
 	FindByUsername(string) (*models.User, error)
 	FindByEmail(string) (*models.User, error)
 }
@@ -26,6 +27,24 @@ func NewUserRepository() (*UserRepository, error) {
 	}
 
 	return &UserRepository{db: db}, nil
+}
+
+func (repo *UserRepository) FindById(user_id int) (*models.User, error) {
+	var user models.User
+
+	query := "SELECT * FROM users WHERE id = $1 LIMIT 1"
+	row := repo.db.QueryRow(query, user_id)
+
+	err := row.Scan(&user.Id, &user.Username, &user.Email, &user.Password)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &user, nil
+
 }
 
 func (repo *UserRepository) FindByUsername(username string) (*models.User, error) {

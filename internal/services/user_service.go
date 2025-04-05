@@ -89,3 +89,13 @@ func (s *UserService) Login(userData *models.UserLoginRequest) (string, error) {
 
 	return token, nil
 }
+
+func (s *UserService) GetUserById(user_id int) (*models.UserResponse, error) {
+	user, err := s.repo.FindById(user_id)
+
+	if err != nil {
+		return nil, &CustomError{Code: 500, ErrorMessage: "Internal Server Error"}
+	}
+
+	return &models.UserResponse{Id: user.Id, Username: user.Username, Email: user.Email}, nil
+}
