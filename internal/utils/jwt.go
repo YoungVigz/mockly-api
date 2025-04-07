@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -15,4 +16,17 @@ func CreateJWTToken(user *models.User) (string, error) {
 	})
 
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+}
+
+func ConvertUserIdToInt(userId any) (int, error) {
+
+	userIdFloat, ok := userId.(float64)
+
+	if !ok {
+		return 0, fmt.Errorf("could not get userId")
+	}
+
+	userIdInt := int(userIdFloat)
+
+	return userIdInt, nil
 }

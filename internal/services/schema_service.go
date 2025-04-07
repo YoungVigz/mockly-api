@@ -5,17 +5,20 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/YoungVigz/mockly-api/internal/models"
+	"github.com/YoungVigz/mockly-api/internal/repository"
 	"github.com/YoungVigz/mockly-api/internal/utils"
 )
 
 type SchemaService struct {
+	repo repository.ISchemaRepository
 }
 
-func NewSchemaService() *SchemaService {
-	return &SchemaService{}
+func NewSchemaService(repo repository.ISchemaRepository) *SchemaService {
+	return &SchemaService{repo: repo}
 }
 
-func (s *SchemaService) GenerateSchema(jsonData []byte) ([]byte, error) {
+func (s *SchemaService) GenerateFromSchema(jsonData []byte) ([]byte, error) {
 
 	var jsonValidator interface{}
 	if err := json.Unmarshal(jsonData, &jsonValidator); err != nil {
@@ -49,4 +52,39 @@ func (s *SchemaService) GenerateSchema(jsonData []byte) ([]byte, error) {
 	}
 
 	return outputData, nil
+}
+
+func (s *SchemaService) SaveSchema(schemaRequest *models.SchemaRequest, userId int) (*models.Schema, error) {
+	var schema models.Schema = models.Schema{
+		Title:   schemaRequest.Title,
+		Content: schemaRequest.Content,
+		UserId:  userId,
+	}
+
+	// TODO Check if user does not have another schema with the same title
+
+	insertedSchema, err := s.repo.InsertSchema(schema)
+
+	if err != nil {
+		return nil, &CustomError{
+			Code:         500,
+			ErrorMessage: "Could not create schema",
+		}
+	}
+
+	return insertedSchema, nil
+}
+
+func (s *SchemaService) GetAllUserSchemas(userId int) (*[]models.SchemaResponse, error) {
+
+	schemas, err := s.repo.GetAllUserSchemas(userId)
+
+	if err != nil {
+		return nil, &CustomError{
+			Code:         500,
+			ErrorMessage: "Could not read schemas",
+		}
+	}
+
+	return schemas, nil
 }

@@ -25,5 +25,7 @@ func RegisterAuthRoutes(r *gin.RouterGroup) {
 func RegisterSchemaRoutes(r *gin.RouterGroup) {
 	schema := r.Group("/schema")
 
-	schema.POST("/generate", middlewares.AuthGuard(), handlers.GenerateSchema)
+	schema.POST("/generate", middlewares.AuthGuard(), handlers.GenerateFromSchema)
+	schema.POST("/", middlewares.AuthGuard(), handlers.SaveSchema)
+	schema.GET("/", middlewares.AuthGuard(), handlers.GetAllUserSchemas)
 }
