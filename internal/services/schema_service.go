@@ -25,13 +25,15 @@ func (s *SchemaService) GenerateFromSchema(jsonData []byte) ([]byte, error) {
 		return nil, &CustomError{Code: 400, ErrorMessage: "Invalid JSON format"}
 	}
 
-	fileName := "./schemas/" + utils.RandomString(10) + ".json"
+	fileName := utils.RandomString(10)
+	schemaFilePath := "./schemas/" + fileName + ".json"
+	outputFilePath := fileName + ".json"
 
-	if err := os.WriteFile(fileName, jsonData, 0644); err != nil {
+	if err := os.WriteFile(schemaFilePath, jsonData, 0644); err != nil {
 		return nil, &CustomError{Code: 400, ErrorMessage: "Could not create a JSON file"}
 	}
 
-	cmd := exec.Command("mockly", "generate", "-s", fileName)
+	cmd := exec.Command("mockly", "generate", "-s", schemaFilePath, "-o", fileName)
 
 	outputBytes, err := cmd.CombinedOutput()
 	if err != nil {
@@ -41,8 +43,7 @@ func (s *SchemaService) GenerateFromSchema(jsonData []byte) ([]byte, error) {
 		}
 	}
 
-	outputFile := "data.json"
-	outputData, err := os.ReadFile(outputFile)
+	outputData, err := os.ReadFile(outputFilePath)
 
 	if err != nil {
 		return nil, &CustomError{
@@ -50,6 +51,9 @@ func (s *SchemaService) GenerateFromSchema(jsonData []byte) ([]byte, error) {
 			ErrorMessage: "Could not read: " + err.Error(),
 		}
 	}
+
+	defer os.Remove(schemaFilePath)
+	defer os.Remove(outputFilePath)
 
 	return outputData, nil
 }
