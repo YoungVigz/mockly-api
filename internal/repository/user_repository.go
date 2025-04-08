@@ -13,6 +13,8 @@ type IUserRepository interface {
 	FindById(int) (*models.User, error)
 	FindByUsername(string) (*models.User, error)
 	FindByEmail(string) (*models.User, error)
+	DeleteByID(int) error
+	ChangePassword(int, string) error
 }
 
 type UserRepository struct {
@@ -95,4 +97,44 @@ func (repo *UserRepository) InsertUser(user models.User) (*models.UserResponse, 
 	}
 
 	return &newUser, nil
+}
+
+func (repo *UserRepository) DeleteByID(userId int) error {
+
+	query := `DELETE FROM users WHERE id = $1`
+	result, err := repo.db.Exec(query, userId)
+	if err != nil {
+		return fmt.Errorf("DeleteByID error: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("DeleteByID error: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("DeleteByID error: no user found with id %d", userId)
+	}
+
+	return nil
+}
+
+func (repo *UserRepository) ChangePassword(userId int, hashPassword string) error {
+
+	query := `UPDATE users SET password = $1 WHERE id = $2`
+	result, err := repo.db.Exec(query, hashPassword, userId)
+	if err != nil {
+		return fmt.Errorf("ChangePassword error: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("ChangePassword error: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("ChangePassword error: no user found with id %d", userId)
+	}
+
+	return nil
 }

@@ -11,6 +11,7 @@ func RegisterRoutes(r *gin.Engine) {
 
 	RegisterAuthRoutes(api)
 	RegisterSchemaRoutes(api)
+	RegisterUserRoutes(api)
 }
 
 func RegisterAuthRoutes(r *gin.RouterGroup) {
@@ -18,8 +19,14 @@ func RegisterAuthRoutes(r *gin.RouterGroup) {
 
 	auth.POST("/register", handlers.RegisterUser)
 	auth.POST("/login", handlers.LoginUser)
+}
 
-	auth.GET("/protected", middlewares.AuthGuard(), handlers.GetUser)
+func RegisterUserRoutes(r *gin.RouterGroup) {
+	user := r.Group("/user")
+
+	user.GET("/", middlewares.AuthGuard(), handlers.GetUser)
+	user.DELETE("/", middlewares.AuthGuard(), handlers.DeleteUser)
+	user.PATCH("/", middlewares.AuthGuard(), handlers.ChangePassword)
 }
 
 func RegisterSchemaRoutes(r *gin.RouterGroup) {

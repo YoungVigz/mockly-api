@@ -18,6 +18,15 @@ type UserLoginRequest struct {
 	Password string
 }
 
+type UserModifyRequest struct {
+	Password string
+}
+
+type UserChangePassword struct {
+	Password    string
+	NewPassword string
+}
+
 type UserResponse struct {
 	Id       int    `json:"user_id"`
 	Username string `json:"username"`
