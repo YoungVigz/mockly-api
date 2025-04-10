@@ -11,6 +11,7 @@ import (
 type ISchemaRepository interface {
 	InsertSchema(models.Schema) (*models.Schema, error)
 	GetAllUserSchemas(int) (*[]models.SchemaResponse, error)
+	GetUserSchemaByTitle(string, int) (*models.Schema, error)
 }
 
 type SchemaRepository struct {
@@ -69,4 +70,21 @@ func (repo *SchemaRepository) GetAllUserSchemas(userId int) (*[]models.SchemaRes
 	}
 
 	return &schemas, nil
+}
+
+func (repo *SchemaRepository) GetUserSchemaByTitle(title string, userId int) (*models.Schema, error) {
+	var schema models.Schema
+
+	query := `SELECT id, title, content, user_id FROM schemas WHERE user_id = $1 AND title = $2 LIMIT 1`
+
+	err := repo.db.QueryRow(query, userId, title).Scan(&schema.Id, &schema.Title, &schema.Content, &schema.UserId)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &schema, nil
 }

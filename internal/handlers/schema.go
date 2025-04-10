@@ -65,12 +65,21 @@ func SaveSchema(c *gin.Context) {
 		return
 	}
 
-	validatorMasseges, err := validators.SchemaValidator(schemaCreateRequest)
+	err := validators.SchemaValidator(schemaCreateRequest)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"code":   http.StatusBadRequest,
-			"errors": validatorMasseges,
+			"errors": err,
+		})
+
+		return
+	}
+
+	validationMessages, err := validators.TitleValidator(schemaCreateRequest.Title)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"errors": validationMessages,
 		})
 
 		return
@@ -158,4 +167,55 @@ func GetAllUserSchemas(c *gin.Context) {
 		"code": http.StatusOK,
 		"data": schemas,
 	})
+}
+
+type TitleUri struct {
+	Title string `uri:"title" binding:"required"`
+}
+
+func GetUserSchemaByTitle(c *gin.Context) {
+
+	userId, exist := c.Get("user_id")
+
+	if !exist {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":   http.StatusUnauthorized,
+			"errors": "Invalid token encoding, please log in again",
+		})
+
+		return
+	}
+
+	userIdInt, err := utils.ConvertUserIdToInt(userId)
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":   http.StatusUnauthorized,
+			"errors": "Invalid token encoding, please log in again",
+		})
+
+		return
+	}
+
+	var uri TitleUri
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	schema, err := schemaService.GetUserSchemaByTitle(uri.Title, userIdInt)
+
+	if err != nil {
+		customError := err.(*services.CustomError)
+
+		c.JSON(customError.Code, gin.H{
+			"error": customError.ErrorMessage,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": schema,
+	})
+
 }

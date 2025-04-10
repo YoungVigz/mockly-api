@@ -8,10 +8,13 @@ import (
 
 func RegisterRoutes(r *gin.Engine) {
 	api := r.Group("/api")
+	ws := r.Group("ws")
 
 	RegisterAuthRoutes(api)
 	RegisterSchemaRoutes(api)
 	RegisterUserRoutes(api)
+
+	RegisterWebSocketRoutes(ws)
 }
 
 func RegisterAuthRoutes(r *gin.RouterGroup) {
@@ -35,4 +38,12 @@ func RegisterSchemaRoutes(r *gin.RouterGroup) {
 	schema.POST("/generate", middlewares.AuthGuard(), handlers.GenerateFromSchema)
 	schema.POST("/", middlewares.AuthGuard(), handlers.SaveSchema)
 	schema.GET("/", middlewares.AuthGuard(), handlers.GetAllUserSchemas)
+	schema.GET("/:title", middlewares.AuthGuard(), handlers.GetUserSchemaByTitle)
+	//TODO:
+	//schema.PUT("/:title", middlewares.AuthGuard(), handlers.ChangeTitleAndContent)
+	//schema.DELETE("/:title", middlewares.AuthGuard(), handlers.DeleteUserSchema)
+}
+
+func RegisterWebSocketRoutes(r *gin.RouterGroup) {
+	r.GET("/", middlewares.AuthGuard(), handlers.WebSocketServer)
 }

@@ -65,7 +65,20 @@ func (s *SchemaService) SaveSchema(schemaRequest *models.SchemaRequest, userId i
 		UserId:  userId,
 	}
 
-	// TODO Check if user does not have another schema with the same title
+	existing, err := s.repo.GetUserSchemaByTitle(schemaRequest.Title, userId)
+
+	if err != nil {
+		return nil, &CustomError{
+			Code:         500,
+			ErrorMessage: "Could not check for duplicate title",
+		}
+	}
+	if existing != nil {
+		return nil, &CustomError{
+			Code:         400,
+			ErrorMessage: "You already have a schema with this title",
+		}
+	}
 
 	insertedSchema, err := s.repo.InsertSchema(schema)
 
@@ -91,4 +104,31 @@ func (s *SchemaService) GetAllUserSchemas(userId int) (*[]models.SchemaResponse,
 	}
 
 	return schemas, nil
+}
+
+func (s *SchemaService) GetUserSchemaByTitle(title string, userId int) (*models.SchemaResponse, error) {
+
+	schema, err := s.repo.GetUserSchemaByTitle(title, userId)
+
+	if err != nil {
+		return nil, &CustomError{
+			Code:         500,
+			ErrorMessage: "Internal Server Error",
+		}
+	}
+
+	if schema == nil {
+		return nil, &CustomError{
+			Code:         404,
+			ErrorMessage: "Schema not found",
+		}
+	}
+
+	var schemaResponse = &models.SchemaResponse{
+		Id:      schema.Id,
+		Title:   schema.Title,
+		Content: schema.Content,
+	}
+
+	return schemaResponse, nil
 }
