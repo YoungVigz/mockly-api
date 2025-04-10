@@ -10,6 +10,7 @@ import (
 	"github.com/YoungVigz/mockly-api/internal/services"
 	"github.com/YoungVigz/mockly-api/internal/utils"
 	"github.com/YoungVigz/mockly-api/internal/validators"
+	"github.com/YoungVigz/mockly-api/internal/websockets"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,6 +23,30 @@ func init() {
 
 func GenerateFromSchema(c *gin.Context) {
 
+	userId, exist := c.Get("user_id")
+
+	if !exist {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":   http.StatusUnauthorized,
+			"errors": "Invalid token encoding, please log in again",
+		})
+
+		return
+	}
+
+	userIdInt, err := utils.ConvertUserIdToInt(userId)
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":   http.StatusUnauthorized,
+			"errors": "Invalid token encoding, please log in again",
+		})
+
+		return
+	}
+
+	websockets.SendToUser(userIdInt, []byte("✅ Authenticated, parsing provided data"))
+
 	jsonData, err := io.ReadAll(c.Request.Body)
 
 	if err != nil {
@@ -29,11 +54,15 @@ func GenerateFromSchema(c *gin.Context) {
 			"code":  http.StatusBadRequest,
 			"error": "Invalid Json format",
 		})
+
+		websockets.SendToUser(userIdInt, []byte("❌ Invalid JSON payload received. Generation canceled."))
+
+		return
 	}
 
 	c.Request.Body.Close()
 
-	data, err := schemaService.GenerateFromSchema(jsonData)
+	data, err := schemaService.GenerateFromSchema(jsonData, userIdInt)
 
 	if err != nil {
 		customError := err.(*services.CustomError)
@@ -45,6 +74,8 @@ func GenerateFromSchema(c *gin.Context) {
 
 		return
 	}
+
+	websockets.SendToUser(userIdInt, []byte("🎉 Operation succesful, sending data"))
 
 	resp := map[string]json.RawMessage{
 		"data": data,

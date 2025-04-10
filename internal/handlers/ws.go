@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/YoungVigz/mockly-api/internal/utils"
+	"github.com/YoungVigz/mockly-api/internal/websockets"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
@@ -48,4 +49,22 @@ func WebSocketServer(c *gin.Context) {
 	}
 
 	conn.WriteMessage(websocket.TextMessage, []byte("Hello "+user.Username))
+
+	websockets.Manager.Mutex.Lock()
+	websockets.Manager.Clients[userIdInt] = conn
+	websockets.Manager.Mutex.Unlock()
+
+	go func(conn *websocket.Conn, userID int) {
+		defer func() {
+			websockets.Manager.Mutex.Lock()
+			delete(websockets.Manager.Clients, userID)
+			websockets.Manager.Mutex.Unlock()
+			conn.Close()
+		}()
+		for {
+			if _, _, err := conn.ReadMessage(); err != nil {
+				break
+			}
+		}
+	}(conn, userIdInt)
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/YoungVigz/mockly-api/internal/models"
 	"github.com/YoungVigz/mockly-api/internal/repository"
 	"github.com/YoungVigz/mockly-api/internal/utils"
+	"github.com/YoungVigz/mockly-api/internal/websockets"
 )
 
 type SchemaService struct {
@@ -18,10 +19,12 @@ func NewSchemaService(repo repository.ISchemaRepository) *SchemaService {
 	return &SchemaService{repo: repo}
 }
 
-func (s *SchemaService) GenerateFromSchema(jsonData []byte) ([]byte, error) {
+func (s *SchemaService) GenerateFromSchema(jsonData []byte, userId int) ([]byte, error) {
 
 	var jsonValidator interface{}
 	if err := json.Unmarshal(jsonData, &jsonValidator); err != nil {
+		websockets.SendToUser(userId, []byte("❌ Invalid JSON payload received. Generation canceled."))
+
 		return nil, &CustomError{Code: 400, ErrorMessage: "Invalid JSON format"}
 	}
 
@@ -30,6 +33,7 @@ func (s *SchemaService) GenerateFromSchema(jsonData []byte) ([]byte, error) {
 	outputFilePath := fileName + ".json"
 
 	if err := os.WriteFile(schemaFilePath, jsonData, 0644); err != nil {
+		websockets.SendToUser(userId, []byte("❌ Could not create a JSON file. Generation canceled."))
 		return nil, &CustomError{Code: 400, ErrorMessage: "Could not create a JSON file"}
 	}
 
@@ -37,6 +41,7 @@ func (s *SchemaService) GenerateFromSchema(jsonData []byte) ([]byte, error) {
 
 	outputBytes, err := cmd.CombinedOutput()
 	if err != nil {
+		websockets.SendToUser(userId, []byte("❌ Your schema appears to be invalid. Please check and try again."))
 		return nil, &CustomError{
 			Code:         400,
 			ErrorMessage: "CLI tool error: " + err.Error() + ": " + string(outputBytes),
@@ -45,9 +50,12 @@ func (s *SchemaService) GenerateFromSchema(jsonData []byte) ([]byte, error) {
 
 	outputData, err := os.ReadFile(outputFilePath)
 
+	websockets.SendToUser(userId, []byte("✅ Data generated, now retriving data"))
+
 	if err != nil {
+		websockets.SendToUser(userId, []byte("❌ Could not read data from generation. Please try again or contact the administrator."))
 		return nil, &CustomError{
-			Code:         400,
+			Code:         500,
 			ErrorMessage: "Could not read: " + err.Error(),
 		}
 	}
