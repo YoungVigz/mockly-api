@@ -10,6 +10,8 @@ func RegisterRoutes(r *gin.Engine) {
 	api := r.Group("/api")
 	ws := r.Group("ws")
 
+	api.GET("/status", handlers.CheckHealth)
+
 	RegisterAuthRoutes(api)
 	RegisterSchemaRoutes(api)
 	RegisterUserRoutes(api)
