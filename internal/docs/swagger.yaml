@@ -1,0 +1,454 @@
+basePath: /api
+definitions:
+  handlers.SchemaWithJSONRequest:
+    properties:
+      content:
+        additionalProperties:
+          type: string
+        type: object
+      title:
+        type: string
+    type: object
+  handlers.SchemaWithJSONResponse:
+    properties:
+      content:
+        additionalProperties:
+          type: string
+        type: object
+      schema_id:
+        type: integer
+      title:
+        type: string
+    type: object
+  handlers.Service:
+    properties:
+      status:
+        type: string
+    type: object
+  handlers.Services:
+    properties:
+      api:
+        $ref: '#/definitions/handlers.Service'
+      database:
+        $ref: '#/definitions/handlers.Service'
+      websocket:
+        $ref: '#/definitions/handlers.WebsocketService'
+    type: object
+  handlers.WebsocketService:
+    properties:
+      activeUsers:
+        type: integer
+      status:
+        type: string
+    type: object
+  models.ErrorResponse:
+    properties:
+      error:
+        example: error massage
+        type: string
+    type: object
+  models.Token:
+    properties:
+      token:
+        type: string
+    type: object
+  models.UserAuthRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  models.UserChangePassword:
+    properties:
+      newPassword:
+        type: string
+      password:
+        type: string
+    type: object
+  models.UserLoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  models.UserModifyRequest:
+    properties:
+      password:
+        type: string
+    type: object
+  models.UserResponse:
+    properties:
+      email:
+        example: test@test.com
+        type: string
+      user_id:
+        example: 35
+        type: integer
+      username:
+        example: username123
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Mockly docs
+  title: Mockly API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates user and returns a JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: JWT token
+          schema:
+            $ref: '#/definitions/models.Token'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Log in to get auth token
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user account in the system
+      parameters:
+      - description: User registration data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserAuthRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Invalid request body or validation errors
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "409":
+          description: Username or email already in use
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Create an account
+      tags:
+      - Auth
+  /schema:
+    get:
+      description: Retrieves all schemas created by the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of schemas
+          schema:
+            items:
+              $ref: '#/definitions/handlers.SchemaWithJSONResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all schemas for the authenticated user
+      tags:
+      - Schema
+    post:
+      consumes:
+      - application/json
+      description: Saves a new schema provided by the user. The schema contains a
+        title and content in JSON format. To learn more about schemas visit https://github.com/YoungVigz/mockly-cli/blob/main/README.md
+      parameters:
+      - description: Schema data to save
+        in: body
+        name: schema
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.SchemaWithJSONRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Schema created
+          schema:
+            $ref: '#/definitions/handlers.SchemaWithJSONResponse'
+        "400":
+          description: Invalid schema data or duplicate title
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Save a new schema
+      tags:
+      - Schema
+  /schema/{title}:
+    get:
+      description: Retrieves a schema based on the title for the authenticated user.
+      parameters:
+      - description: Schema title
+        in: path
+        name: title
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Schema data
+          schema:
+            $ref: '#/definitions/handlers.SchemaWithJSONResponse'
+        "400":
+          description: Invalid title was provided
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Schema not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user's schema by title
+      tags:
+      - Schema
+  /schema/generate:
+    post:
+      consumes:
+      - application/json
+      description: Accepts a JSON schema and generates data using the CLI tool. Returns
+        the generated data or an error if invalid. To learn more about schemas visit
+        https://github.com/YoungVigz/mockly-cli/blob/main/README.md
+      parameters:
+      - description: JSON Schema for generation
+        in: body
+        name: schema
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Generated data
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid JSON format, or invalid schema syntax
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Generate data from schema
+      tags:
+      - Schema
+  /status:
+    get:
+      consumes:
+      - application/json
+      description: Returns the health status of the API, Database, and Websocket services.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Health check response with services status
+          schema:
+            $ref: '#/definitions/handlers.Services'
+        "500":
+          description: API dose not respond thus every service is unhealthy
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Check system health
+      tags:
+      - System
+  /user:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes the user's account based on the provided authentication
+        token and password.
+      parameters:
+      - description: Current password
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserModifyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted account
+          schema:
+            type: string
+        "400":
+          description: Bad request, invalid password
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized, invalid token
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete user account
+      tags:
+      - User
+    get:
+      consumes:
+      - application/json
+      description: Returns user data based on the provided authentication token.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User data
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "401":
+          description: Unauthorized, invalid token
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user data
+      tags:
+      - User
+    patch:
+      consumes:
+      - application/json
+      description: Allows the user to change their password based on the provided
+        current password and new password.
+      parameters:
+      - description: Current and new password
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserChangePassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password changed successfully
+          schema:
+            type: string
+        "400":
+          description: Bad request, invalid password
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized, invalid token
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Change user password
+      tags:
+      - User
+  /ws:
+    get:
+      consumes:
+      - application/json
+      description: Opens a WebSocket connection for real-time notification while generating
+        schema. The user must be authenticated to use this endpoint.
+      produces:
+      - application/json
+      responses:
+        "101":
+          description: WebSocket connection established
+          schema:
+            type: string
+        "401":
+          description: Unauthorized, invalid token
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Establish WebSocket connection
+      tags:
+      - WebSocket
+schemes:
+- http
+swagger: "2.0"

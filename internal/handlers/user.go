@@ -10,6 +10,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Summary Get user data
+// @Description Returns user data based on the provided authentication token.
+// @Tags User
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} models.UserResponse "User data"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized, invalid token"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Router /user [get]
 func GetUser(c *gin.Context) {
 
 	val, exists := c.Get("user_id")
@@ -42,6 +52,19 @@ func GetUser(c *gin.Context) {
 	})
 }
 
+// @Summary Delete user account
+// @Description Deletes the user's account based on the provided authentication token and password.
+// @Tags User
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param body body models.UserModifyRequest true "Current password"
+// @Success 200 {object} string "Successfully deleted account"
+// @Failure 400 {object} models.ErrorResponse "Bad request, invalid password"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized, invalid token"
+// @Failure 404 {object} models.ErrorResponse "User not found"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Router /user [delete]
 func DeleteUser(c *gin.Context) {
 
 	var userRequest *models.UserModifyRequest = &models.UserModifyRequest{}
@@ -101,6 +124,19 @@ func DeleteUser(c *gin.Context) {
 	})
 }
 
+// @Summary Change user password
+// @Description Allows the user to change their password based on the provided current password and new password.
+// @Tags User
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param body body models.UserChangePassword true "Current and new password"
+// @Success 200 {object} string "Password changed successfully"
+// @Failure 400 {object} models.ErrorResponse "Bad request, invalid password"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized, invalid token"
+// @Failure 404 {object} models.ErrorResponse "User not found"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Router /user [patch]
 func ChangePassword(c *gin.Context) {
 	var passwords *models.UserChangePassword = &models.UserChangePassword{}
 

@@ -14,6 +14,16 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
+// @Summary Establish WebSocket connection
+// @Description Opens a WebSocket connection for real-time notification while generating schema. The user must be authenticated to use this endpoint.
+// @Tags WebSocket
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 101 {string} string "WebSocket connection established"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized, invalid token"
+// @Failure 500 {object} models.ErrorResponse "Internal Server Error"
+// @Router /ws [get]
 func WebSocketServer(c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {

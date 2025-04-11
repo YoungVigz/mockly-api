@@ -1,3 +1,9 @@
+// @title           Mockly API
+// @version         1.0
+// @description     Mockly docs
+// @BasePath        /api
+// @schemes         http
+// @host            localhost:8080
 package main
 
 import (

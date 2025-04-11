@@ -28,7 +28,7 @@ type UserChangePassword struct {
 }
 
 type UserResponse struct {
-	Id       int    `json:"user_id"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
+	Id       int    `json:"user_id" example:"35"`
+	Username string `json:"username" example:"username123"`
+	Email    string `json:"email" example:"test@test.com"`
 }

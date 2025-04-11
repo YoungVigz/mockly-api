@@ -1,15 +1,19 @@
 package routes
 
 import (
+	_ "github.com/YoungVigz/mockly-api/internal/docs"
 	"github.com/YoungVigz/mockly-api/internal/handlers"
 	"github.com/YoungVigz/mockly-api/internal/middlewares"
 	"github.com/gin-gonic/gin"
+	files "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func RegisterRoutes(r *gin.Engine) {
 	api := r.Group("/api")
 	ws := r.Group("ws")
 
+	api.GET("/docs/*any", ginSwagger.WrapHandler(files.Handler))
 	api.GET("/status", handlers.CheckHealth)
 
 	RegisterAuthRoutes(api)

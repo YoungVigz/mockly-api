@@ -21,6 +21,29 @@ func init() {
 	schemaService = *services.NewSchemaService(schemaRepository)
 }
 
+type SchemaWithJSONResponse struct {
+	Id      int               `json:"schema_id"`
+	Title   string            `json:"title"`
+	Content map[string]string `json:"content"`
+}
+
+type SchemaWithJSONRequest struct {
+	Title   string
+	Content map[string]string
+}
+
+// @Summary Generate data from schema
+// @Description Accepts a JSON schema and generates data using the CLI tool. Returns the generated data or an error if invalid. To learn more about schemas visit https://github.com/YoungVigz/mockly-cli/blob/main/README.md
+// @Tags Schema
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param schema body map[string]string true "JSON Schema for generation"
+// @Success 200 {object} map[string]string "Generated data"
+// @Failure 400 {object} models.ErrorResponse "Invalid JSON format, or invalid schema syntax"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Router /schema/generate [post]
 func GenerateFromSchema(c *gin.Context) {
 
 	userId, exist := c.Get("user_id")
@@ -84,6 +107,18 @@ func GenerateFromSchema(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+// @Summary Save a new schema
+// @Description Saves a new schema provided by the user. The schema contains a title and content in JSON format. To learn more about schemas visit https://github.com/YoungVigz/mockly-cli/blob/main/README.md
+// @Tags Schema
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param schema body SchemaWithJSONRequest true "Schema data to save"
+// @Success 201 {object} SchemaWithJSONResponse "Schema created"
+// @Failure 400 {object} models.ErrorResponse "Invalid schema data or duplicate title"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Router /schema [post]
 func SaveSchema(c *gin.Context) {
 	schemaCreateRequest := &models.SchemaRequest{}
 
@@ -157,6 +192,15 @@ func SaveSchema(c *gin.Context) {
 	})
 }
 
+// @Summary Get all schemas for the authenticated user
+// @Description Retrieves all schemas created by the authenticated user.
+// @Tags Schema
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} SchemaWithJSONResponse "List of schemas"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Router /schema [get]
 func GetAllUserSchemas(c *gin.Context) {
 
 	userId, exist := c.Get("user_id")
@@ -204,6 +248,18 @@ type TitleUri struct {
 	Title string `uri:"title" binding:"required"`
 }
 
+// @Summary Get user's schema by title
+// @Description Retrieves a schema based on the title for the authenticated user.
+// @Tags Schema
+// @Produce json
+// @Security BearerAuth
+// @Param title path string true "Schema title"
+// @Success 200 {object} SchemaWithJSONResponse "Schema data"
+// @Failure 400 {object} models.ErrorResponse "Invalid title was provided"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized"
+// @Failure 404 {object} models.ErrorResponse "Schema not found"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Router /schema/{title} [get]
 func GetUserSchemaByTitle(c *gin.Context) {
 
 	userId, exist := c.Get("user_id")

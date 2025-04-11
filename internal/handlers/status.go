@@ -23,6 +23,14 @@ type Services struct {
 	Websocket WebsocketService `json:"websocket"`
 }
 
+// @Summary Check system health
+// @Description Returns the health status of the API, Database, and Websocket services.
+// @Tags System
+// @Accept json
+// @Produce json
+// @Success 200 {object} Services "Health check response with services status"
+// @Failure 500 {object} models.ErrorResponse "API dose not respond thus every service is unhealthy"
+// @Router /status [get]
 func CheckHealth(c *gin.Context) {
 
 	websockets.Manager.Mutex.RLock()
