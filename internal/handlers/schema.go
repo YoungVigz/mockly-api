@@ -306,3 +306,57 @@ func GetUserSchemaByTitle(c *gin.Context) {
 	})
 
 }
+
+func DeleteUserSchema(c *gin.Context) {
+	userId, exist := c.Get("user_id")
+
+	if !exist {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"errors": "Invalid token encoding, please log in again",
+		})
+
+		return
+	}
+
+	userIdInt, err := utils.ConvertUserIdToInt(userId)
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"errors": "Invalid token encoding, please log in again",
+		})
+
+		return
+	}
+
+	_, err = userService.GetUserById(userIdInt)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"errors": "The provided token corresponds to a user that no longer exists.",
+		})
+
+		return
+	}
+
+	var uri TitleUri
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = schemaService.DeleteUserSchema(uri.Title, userIdInt)
+
+	if err != nil {
+		customError := err.(*services.CustomError)
+
+		c.JSON(customError.Code, gin.H{
+			"error": customError.ErrorMessage,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Schema deleted succesfully",
+	})
+
+}

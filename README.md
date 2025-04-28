@@ -27,7 +27,7 @@ Mockly API enables the generation and management of mock data using user-provide
 ## Installation & Running (dev) 🚀
 
 ```bash
-    git clone https://github.com/yourusername/mockly-api.git
+    git clone https://github.com/YoungVigz/mockly-api.git
     cd mockly-api
     go mod tidy
     docker compose build

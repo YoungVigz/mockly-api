@@ -140,3 +140,26 @@ func (s *SchemaService) GetUserSchemaByTitle(title string, userId int) (*models.
 
 	return schemaResponse, nil
 }
+
+func (s *SchemaService) DeleteUserSchema(title string, userId int) error {
+
+	_, err := s.repo.GetUserSchemaByTitle(title, userId)
+
+	if err != nil {
+		return &CustomError{
+			ErrorMessage: "Provided title does not exist in user's saved schemas",
+			Code:         404,
+		}
+	}
+
+	err = s.repo.DeleteSchema(title, userId)
+
+	if err != nil {
+		return &CustomError{
+			ErrorMessage: "Could not deleted schema, try again",
+			Code:         500,
+		}
+	}
+
+	return nil
+}

@@ -12,6 +12,7 @@ type ISchemaRepository interface {
 	InsertSchema(models.Schema) (*models.Schema, error)
 	GetAllUserSchemas(int) (*[]models.SchemaResponse, error)
 	GetUserSchemaByTitle(string, int) (*models.Schema, error)
+	DeleteSchema(string, int) error
 }
 
 type SchemaRepository struct {
@@ -87,4 +88,24 @@ func (repo *SchemaRepository) GetUserSchemaByTitle(title string, userId int) (*m
 	}
 
 	return &schema, nil
+}
+
+func (repo *SchemaRepository) DeleteSchema(title string, userId int) error {
+	query := `DELETE FROM schemas WHERE user_id = $1 AND title = $2`
+
+	result, err := repo.db.Exec(query, userId, title)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }

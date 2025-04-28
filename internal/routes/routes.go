@@ -45,11 +45,15 @@ func RegisterSchemaRoutes(r *gin.RouterGroup) {
 	schema.POST("/", middlewares.AuthGuard(), handlers.SaveSchema)
 	schema.GET("/", middlewares.AuthGuard(), handlers.GetAllUserSchemas)
 	schema.GET("/:title", middlewares.AuthGuard(), handlers.GetUserSchemaByTitle)
-	//TODO:
-	//schema.PUT("/:title", middlewares.AuthGuard(), handlers.ChangeTitleAndContent)
-	//schema.DELETE("/:title", middlewares.AuthGuard(), handlers.DeleteUserSchema)
+	schema.DELETE("/:title", middlewares.AuthGuard(), handlers.DeleteUserSchema)
 }
 
 func RegisterWebSocketRoutes(r *gin.RouterGroup) {
 	r.GET("/", middlewares.AuthGuard(), handlers.WebSocketServer)
+}
+
+func SetupTestRoutes() *gin.Engine {
+	r := gin.Default()
+	RegisterRoutes(r)
+	return r
 }
