@@ -85,7 +85,7 @@ func GenerateFromSchema(c *gin.Context) {
 
 	c.Request.Body.Close()
 
-	data, err := schemaService.GenerateFromSchema(jsonData, userIdInt)
+	data, fileName, err := schemaService.GenerateFromSchema(jsonData, userIdInt)
 
 	if err != nil {
 		customError := err.(*services.CustomError)
@@ -98,13 +98,14 @@ func GenerateFromSchema(c *gin.Context) {
 		return
 	}
 
-	websockets.SendToUser(userIdInt, []byte("🎉 Operation succesful, sending data"))
+	websockets.SendToUser(userIdInt, []byte("🎉 Operation succesful, sending data, download using id: "+fileName))
 
-	resp := map[string]json.RawMessage{
-		"data": data,
-	}
+	resp := json.RawMessage(data)
 
-	c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusOK, gin.H{
+		"download_id": fileName,
+		"data":        resp,
+	})
 }
 
 // @Summary Save a new schema
@@ -307,6 +308,18 @@ func GetUserSchemaByTitle(c *gin.Context) {
 
 }
 
+// @Summary Deletes user's schema by title
+// @Description Deletes user's schema based on the title for the authenticated user.
+// @Tags Schema
+// @Produce json
+// @Security BearerAuth
+// @Param title path string true "Schema title"
+// @Success 200 {object} SchemaWithJSONResponse "Schema data"
+// @Failure 400 {object} models.ErrorResponse "Invalid title was provided"
+// @Failure 401 {object} models.ErrorResponse "Unauthorized"
+// @Failure 404 {object} models.ErrorResponse "Schema not found"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Router /schema/{title} [delete]
 func DeleteUserSchema(c *gin.Context) {
 	userId, exist := c.Get("user_id")
 
@@ -359,4 +372,29 @@ func DeleteUserSchema(c *gin.Context) {
 		"message": "Schema deleted succesfully",
 	})
 
+}
+
+type DownloadUri struct {
+	Id string `uri:"id" binding:"required"`
+}
+
+// @Summary Get JSON file of previously genereated schema
+// @Description After generating a schema you can use this end point to retrive a file by providing download_id.
+// @Tags Schema
+// @Produce json
+// @Security BearerAuth
+// @Param download_id path string true "DownloadUri download_id"
+// @Success 200 {object} SchemaWithJSONResponse "Schema data"
+// @Failure 404 {object} models.ErrorResponse "Schema file not found"
+// @Failure 500 {object} models.ErrorResponse "Internal server error"
+// @Router /schema/{download_id} [get]
+func DownloadSchema(c *gin.Context) {
+	var fileName DownloadUri
+	if err := c.ShouldBindUri(&fileName); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	filePath := "./schemas/" + fileName.Id + ".json"
+	c.FileAttachment(filePath, fileName.Id+".json")
 }

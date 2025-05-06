@@ -220,7 +220,74 @@ paths:
       summary: Save a new schema
       tags:
       - Schema
+  /schema/{download_id}:
+    get:
+      description: After generating a schema you can use this end point to retrive
+        a file by providing download_id.
+      parameters:
+      - description: DownloadUri download_id
+        in: path
+        name: download_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Schema data
+          schema:
+            $ref: '#/definitions/handlers.SchemaWithJSONResponse'
+        "404":
+          description: Schema file not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get JSON file of previously genereated schema
+      tags:
+      - Schema
   /schema/{title}:
+    delete:
+      description: Deletes user's schema based on the title for the authenticated
+        user.
+      parameters:
+      - description: Schema title
+        in: path
+        name: title
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Schema data
+          schema:
+            $ref: '#/definitions/handlers.SchemaWithJSONResponse'
+        "400":
+          description: Invalid title was provided
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Schema not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Deletes user's schema by title
+      tags:
+      - Schema
     get:
       description: Retrieves a schema based on the title for the authenticated user.
       parameters:

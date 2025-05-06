@@ -19,13 +19,13 @@ func NewSchemaService(repo repository.ISchemaRepository) *SchemaService {
 	return &SchemaService{repo: repo}
 }
 
-func (s *SchemaService) GenerateFromSchema(jsonData []byte, userId int) ([]byte, error) {
+func (s *SchemaService) GenerateFromSchema(jsonData []byte, userId int) ([]byte, string, error) {
 
 	var jsonValidator interface{}
 	if err := json.Unmarshal(jsonData, &jsonValidator); err != nil {
 		websockets.SendToUser(userId, []byte("❌ Invalid JSON payload received. Generation canceled."))
 
-		return nil, &CustomError{Code: 400, ErrorMessage: "Invalid JSON format"}
+		return nil, "", &CustomError{Code: 400, ErrorMessage: "Invalid JSON format"}
 	}
 
 	fileName := utils.RandomString(10)
@@ -34,7 +34,7 @@ func (s *SchemaService) GenerateFromSchema(jsonData []byte, userId int) ([]byte,
 
 	if err := os.WriteFile(schemaFilePath, jsonData, 0644); err != nil {
 		websockets.SendToUser(userId, []byte("❌ Could not create a JSON file. Generation canceled."))
-		return nil, &CustomError{Code: 400, ErrorMessage: "Could not create a JSON file"}
+		return nil, "", &CustomError{Code: 400, ErrorMessage: "Could not create a JSON file"}
 	}
 
 	cmd := exec.Command("mockly", "generate", "-s", schemaFilePath, "-o", fileName)
@@ -42,7 +42,7 @@ func (s *SchemaService) GenerateFromSchema(jsonData []byte, userId int) ([]byte,
 	outputBytes, err := cmd.CombinedOutput()
 	if err != nil {
 		websockets.SendToUser(userId, []byte("❌ Your schema appears to be invalid. Please check and try again."))
-		return nil, &CustomError{
+		return nil, "", &CustomError{
 			Code:         400,
 			ErrorMessage: "CLI tool error: " + err.Error() + ": " + string(outputBytes),
 		}
@@ -54,16 +54,15 @@ func (s *SchemaService) GenerateFromSchema(jsonData []byte, userId int) ([]byte,
 
 	if err != nil {
 		websockets.SendToUser(userId, []byte("❌ Could not read data from generation. Please try again or contact the administrator."))
-		return nil, &CustomError{
+		return nil, "", &CustomError{
 			Code:         500,
 			ErrorMessage: "Could not read: " + err.Error(),
 		}
 	}
 
-	defer os.Remove(schemaFilePath)
 	defer os.Remove(outputFilePath)
 
-	return outputData, nil
+	return outputData, fileName, nil
 }
 
 func (s *SchemaService) SaveSchema(schemaRequest *models.SchemaRequest, userId int) (*models.Schema, error) {

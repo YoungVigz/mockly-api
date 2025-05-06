@@ -262,6 +262,52 @@
                 }
             }
         },
+        "/schema/{download_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "After generating a schema you can use this end point to retrive a file by providing download_id.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schema"
+                ],
+                "summary": "Get JSON file of previously genereated schema",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "DownloadUri download_id",
+                        "name": "download_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Schema data",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SchemaWithJSONResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Schema file not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/schema/{title}": {
             "get": {
                 "security": [
@@ -277,6 +323,62 @@
                     "Schema"
                 ],
                 "summary": "Get user's schema by title",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schema title",
+                        "name": "title",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Schema data",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SchemaWithJSONResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid title was provided",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Schema not found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes user's schema based on the title for the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schema"
+                ],
+                "summary": "Deletes user's schema by title",
                 "parameters": [
                     {
                         "type": "string",

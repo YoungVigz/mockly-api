@@ -46,6 +46,7 @@ func RegisterSchemaRoutes(r *gin.RouterGroup) {
 	schema.GET("/", middlewares.AuthGuard(), handlers.GetAllUserSchemas)
 	schema.GET("/:title", middlewares.AuthGuard(), handlers.GetUserSchemaByTitle)
 	schema.DELETE("/:title", middlewares.AuthGuard(), handlers.DeleteUserSchema)
+	schema.GET("/download/:id", handlers.DownloadSchema)
 }
 
 func RegisterWebSocketRoutes(r *gin.RouterGroup) {

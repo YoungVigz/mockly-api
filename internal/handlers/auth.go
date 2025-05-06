@@ -12,6 +12,10 @@ import (
 
 var userService services.UserService
 
+func SetUserService(service services.UserService) {
+	userService = service
+}
+
 func init() {
 	repo, _ := repository.NewUserRepository()
 	userService = *services.NewUserService(repo)
