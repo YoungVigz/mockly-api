@@ -20,7 +20,7 @@ func main() {
 	err := database.DatabaseInit()
 
 	if err != nil {
-		log.Fatal("Unable to connect to database!")
+		log.Fatal("Unable to connect to database!: ", err)
 	}
 
 	fmt.Println("Connected to database")
