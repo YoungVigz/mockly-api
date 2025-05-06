@@ -27,5 +27,5 @@ func main() {
 
 	api := gin.Default()
 	routes.RegisterRoutes(api)
-	api.Run(":8080")
+	api.Run("0.0.0.0:8080")
 }
