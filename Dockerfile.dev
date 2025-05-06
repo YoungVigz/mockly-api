@@ -36,5 +36,7 @@ RUN go mod download
 # Kopiowanie źródła
 COPY --chown=appuser:appuser . .
 
+EXPOSE 8080
+
 # Kompilacja i uruchomienie
 CMD ["go", "run", "./cmd/main.go"]
